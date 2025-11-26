@@ -2,20 +2,17 @@ import os
 import sys
 import numpy as np
 import onnxruntime as ort
-import requests
+import boto3
 
-MODEL_URL = os.environ.get("MODEL_URL", "https://projectofinalml-santiagoprado.s3.amazonaws.com/mnist-8.onnx")
 MODEL_PATH = "test_model.onnx"
+BUCKET = "projectofinalml-santiagoprado"
+MODEL_KEY = "mnist-8.onnx"
 
 def download():
     if not os.path.exists(MODEL_PATH):
-        r = requests.get(MODEL_URL)
-        r.raise_for_status()
-        if r.headers.get('content-type', '').startswith('text/html'):
-            raise ValueError(f"URL returned HTML. Check S3 permissions: {MODEL_URL}")
-        with open(MODEL_PATH, "wb") as f:
-            f.write(r.content)
-        print(f"Downloaded {len(r.content)} bytes")
+        s3 = boto3.client('s3')
+        s3.download_file(BUCKET, MODEL_KEY, MODEL_PATH)
+        print(f"Downloaded model from S3 to {MODEL_PATH}")
 
 def test_prediction_runs():
     download()

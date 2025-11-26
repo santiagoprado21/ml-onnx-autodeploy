@@ -1,14 +1,12 @@
-import requests
+import boto3
 import os
 
-test_data_url = os.environ.get("TEST_DATA_URL", "https://projectofinalml-santiagoprado.s3.amazonaws.com/test_data.csv")
-test_labels_url = os.environ.get("TEST_LABELS_URL", "https://projectofinalml-santiagoprado.s3.amazonaws.com/test_labels.csv")
+BUCKET = "projectofinalml-santiagoprado"
+s3 = boto3.client('s3')
 
-def download(url, dest):
-    r = requests.get(url)
-    with open(dest, "wb") as f:
-        f.write(r.content)
-    print(f"Descargado {dest}")
+# Descargar datos de prueba
+s3.download_file(BUCKET, "test_data.csv", "test_data.csv")
+print("Descargado test_data.csv")
 
-download(test_data_url, "test_data.csv")
-download(test_labels_url, "test_labels.csv")
+s3.download_file(BUCKET, "test_labels.csv", "test_labels.csv")
+print("Descargado test_labels.csv")
