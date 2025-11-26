@@ -34,11 +34,8 @@ Un pipeline automatizado que:
 
 ### Componentes principales
 
-```
 
 ![Diagrama de arquitectura](assets/MLFinalProject.png)
-
-```
 
 ### Tecnologías utilizadas
 
