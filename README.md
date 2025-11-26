@@ -1,6 +1,6 @@
 # Sistema de Despliegue Automático para Modelos ONNX
 
-Sistema completo de CI/CD para despliegue automático de modelos de Machine Learning en formato ONNX, con endpoints separados para desarrollo y producción.
+Sistema completo de CI/CD para despliegue automático de modelos de Machine Learning en formato ONNX, con endpoints separados para desarrollo y producción..
 
 ## 🏗️ Arquitectura
 
