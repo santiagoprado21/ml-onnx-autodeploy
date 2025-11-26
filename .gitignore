@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.onnx
+.env
+*.log
+*.txt
+.cache
+.DS_Store
+.idea/
+.vscode/
+docker/*.tar
+docker/*.img
