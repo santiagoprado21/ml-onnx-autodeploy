@@ -35,10 +35,14 @@ def append_prediction_to_s3(prediction, env):
 def load_model():
     global session
     if not os.path.exists(MODEL_PATH):
-        resp = requests.get(MODEL_URL)
-        with open(MODEL_PATH, 'wb') as f:
-            f.write(resp.content)
+        # Descargar modelo desde S3 usando boto3
+        bucket = "projectofinalml-santiagoprado"
+        key = "mnist-8.onnx"
+        s3 = boto3.client('s3')
+        s3.download_file(bucket, key, MODEL_PATH)
+        print(f"Model downloaded from S3: {bucket}/{key}")
     session = ort.InferenceSession(MODEL_PATH)
+    print(f"Model loaded successfully")
 
 @app.post("/predict")
 def predict(request: PredictionRequest):
