@@ -70,16 +70,15 @@ jobs:
 
       - name: Tag Docker image (latest)
         run: |
-          docker tag $ECR_REPO:$GITHUB_SHA ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/$ECR_REPO:latest
+          docker tag $ECR_REPO:$GITHUB_SHA \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/$ECR_REPO:latest
+
+      - name: Tag Docker image with SHA
+        run: |
+          docker tag $ECR_REPO:$GITHUB_SHA \
+          ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/$ECR_REPO:$GITHUB_SHA
 
       - name: Push Docker image to ECR
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/$ECR_REPO:latest
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/$ECR_REPO:$GITHUB_SHA
-
-      - name: Deploy to ECS
-        env:
-          CLUSTER_NAME: "ml-autodeploy-cluster"
-          SERVICE_NAME: "api-${{ github.ref_name }}"
-        run: |
-          aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment
