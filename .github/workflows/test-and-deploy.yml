@@ -1,0 +1,78 @@
+name: Test, Build & Deploy ML API
+
+on:
+  push:
+    branches:
+      - dev
+      - prod
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPO: ml-onnx-autodeploy-${{ github.ref_name }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install Python and dependencies
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - run: pip install -r app/requirements.txt pytest
+
+      - name: Download model and test data
+        env:
+          MODEL_URL: https://projectofinalml-santiagoprado.s3.amazonaws.com/mnist-8.onnx
+          TEST_DATA_URL: https://projectofinalml-santiagoprado.s3.amazonaws.com/test_data.csv
+          TEST_LABELS_URL: https://projectofinalml-santiagoprado.s3.amazonaws.com/test_labels.csv
+        run: |
+          python scripts/download_model.py
+          python scripts/download_data.py
+
+      - name: Run unit tests
+        env:
+          MODEL_URL: https://projectofinalml-santiagoprado.s3.amazonaws.com/mnist-8.onnx
+        run: pytest tests/
+
+  build-and-deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image
+        run: |
+          docker build -t $ECR_REPO:$GITHUB_SHA -f docker/Dockerfile .
+
+      - name: Tag Docker image (latest)
+        run: |
+          docker tag $ECR_REPO:$GITHUB_SHA ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/$ECR_REPO:latest
+
+      - name: Push Docker image to ECR
+        run: |
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/$ECR_REPO:latest
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/$ECR_REPO:$GITHUB_SHA
+
+      - name: Deploy to ECS
+        env:
+          CLUSTER_NAME: "ml-autodeploy-cluster"
+          SERVICE_NAME: "api-${{ github.ref_name }}"
+        run: |
+          aws ecs update-service --cluster $CLUSTER_NAME --service $SERVICE_NAME --force-new-deployment
