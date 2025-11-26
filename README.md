@@ -38,8 +38,8 @@ Sistema completo de CI/CD para despliegue automático de modelos de Machine Lear
 
 | Rama | Servicio ECS | Endpoint | Archivo de logs |
 |------|-------------|----------|-----------------|
-| `dev` | api-dev | Desarrollo | predicciones_dev.txt |
-| `prod` | api-prod | Producción | predicciones_prod.txt |
+| `dev` | api-dev | http://54.157.149.20 | predicciones_dev.txt |
+| `prod` | api-prod | http://18.234.193.125 | predicciones_prod.txt |
 
 ### Etapas del Pipeline
 

@@ -49,8 +49,12 @@ def predict(request: PredictionRequest):
     global session
     try:
         input_data = np.array(request.data, dtype=np.float32)
-        if input_data.ndim == 1:
+        # Reshape para MNIST: (batch, channels, height, width) = (1, 1, 28, 28)
+        if input_data.size == 784:
+            input_data = input_data.reshape(1, 1, 28, 28)
+        elif input_data.ndim == 1:
             input_data = np.expand_dims(input_data, 0)
+        
         inputs = {session.get_inputs()[0].name: input_data}
         output = session.run(None, inputs)[0]
         pred = int(np.argmax(output, axis=1)[0])
