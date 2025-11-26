@@ -23,13 +23,20 @@ jobs:
           python-version: '3.10'
       - run: pip install -r app/requirements.txt pytest
 
+      - name: Configure AWS credentials for downloads
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      
       - name: Download model and test data
         env:
           MODEL_URL: https://projectofinalml-santiagoprado.s3.amazonaws.com/mnist-8.onnx
           TEST_DATA_URL: https://projectofinalml-santiagoprado.s3.amazonaws.com/test_data.csv
           TEST_LABELS_URL: https://projectofinalml-santiagoprado.s3.amazonaws.com/test_labels.csv
         run: |
-          python scripts/download_model.py
+          python scripts/download_model_s3.py
           python scripts/download_data.py
 
       - name: Run unit tests

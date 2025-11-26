@@ -10,8 +10,12 @@ MODEL_PATH = "test_model.onnx"
 def download():
     if not os.path.exists(MODEL_PATH):
         r = requests.get(MODEL_URL)
+        r.raise_for_status()
+        if r.headers.get('content-type', '').startswith('text/html'):
+            raise ValueError(f"URL returned HTML. Check S3 permissions: {MODEL_URL}")
         with open(MODEL_PATH, "wb") as f:
             f.write(r.content)
+        print(f"Downloaded {len(r.content)} bytes")
 
 def test_prediction_runs():
     download()
