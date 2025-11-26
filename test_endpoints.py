@@ -2,8 +2,8 @@ import requests
 import numpy as np
 
 # IPs de los endpoints (puerto 80)
-DEV_URL = "http://54.157.149.20/predict"
-PROD_URL = "http://18.235.1.101/predict"  # Actualizar con la IP correcta de prod
+DEV_URL = "http://44.210.82.145/predict"
+PROD_URL = "http://34.204.77.202/predict"  # Actualizar con la IP correcta de prod
 
 # Generar datos de prueba (imagen MNIST de 28x28 = 784 valores)
 # MNIST espera forma (1, 1, 28, 28) = batch, canales, altura, ancho
