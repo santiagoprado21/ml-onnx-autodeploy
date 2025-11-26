@@ -1,8 +1,46 @@
 # Sistema de Despliegue Automático para Modelos ONNX
 
-Sistema completo de CI/CD para despliegue automático de modelos de Machine Learning en formato ONNX, con endpoints separados para desarrollo y producción..
+Sistema completo de CI/CD para despliegue automático de modelos de Machine Learning en formato ONNX, con endpoints separados para desarrollo y producción.
 
-## 🏗️ Arquitectura
+## 🎯 Propósito del Proyecto
+
+Este repositorio implementa un **sistema de despliegue automático (MLOps)** que permite actualizar modelos de Machine Learning en producción de forma segura, rápida y sin intervención manual.
+
+### Problema que resuelve
+
+En producción, actualizar modelos ML manualmente es:
+- ⏱️ **Lento**: Puede tomar horas de trabajo manual
+- 🐛 **Propenso a errores**: Riesgo de romper el servicio
+- 💰 **Costoso**: Requiere personal DevOps dedicado
+- 🔄 **No escalable**: Difícil de mantener con múltiples modelos
+
+### Solución propuesta
+
+Un pipeline automatizado que:
+- ✅ **Prueba** el modelo antes de desplegarlo
+- ✅ **Despliega** automáticamente si pasa las pruebas
+- ✅ **Separa** entornos de desarrollo y producción
+- ✅ **Registra** todas las predicciones para monitoreo
+- ✅ **Funciona 24/7** sin intervención humana
+
+### Caso de uso
+
+**Modelo implementado:** Clasificador de dígitos manuscritos (MNIST)
+- **Entrada:** Imagen de 28x28 píxeles (784 valores)
+- **Salida:** Dígito reconocido (0-9)
+- **Aplicación real:** Reconocimiento de números en cheques, formularios, documentos escaneados
+
+## 🏗️ Arquitectura del Sistema
+
+### Componentes principales
+
+```
+
+![Diagrama de arquitectura](assets/MLFinalProject.png)
+
+```
+
+### Tecnologías utilizadas
 
 - **Modelo ONNX**: Almacenado en S3, descargado dinámicamente (nunca en el repo)
 - **Datos de prueba**: En S3, descargados en pipeline CI/CD
@@ -132,15 +170,77 @@ curl -X POST http://localhost:8000/predict \
   -d '{"data": [0.1, 0.2, ..., 0.5]}'  # 784 valores para MNIST
 ```
 
-## 🔄 Flujo de Trabajo
+**Respuesta esperada:**
+```json
+{
+  "prediction": 7
+}
+```
+
+### Probar endpoints en vivo
+```bash
+python test_endpoints.py
+```
+
+**Output:**
+```
+==================================================
+PROBANDO ENDPOINTS ML
+==================================================
+
+🔵 Probando endpoint DEV...
+Status: 200
+Respuesta: {'prediction': 7}
+
+🟢 Probando endpoint PROD...
+Status: 200
+Respuesta: {'prediction': 3}
+
+==================================================
+✅ Pruebas completadas
+==================================================
+```
+
+## 🔄 Flujo de Trabajo Completo
+
+### Ciclo de vida del despliegue
+
+```
+1. Desarrollador hace cambios en código
+   ↓
+2. git push origin dev
+   ↓
+3. GitHub Actions detecta el push
+   ↓
+4. ETAPA TEST:
+   - Descarga modelo desde S3
+   - Descarga datos de prueba desde S3
+   - Ejecuta tests unitarios
+   - ¿Pasan? → Continúa | ¿Fallan? → Detiene pipeline
+   ↓
+5. ETAPA BUILD:
+   - Construye imagen Docker
+   - Etiqueta con SHA del commit
+   - Sube imagen a AWS ECR
+   ↓
+6. ETAPA DEPLOY:
+   - Actualiza servicio ECS (api-dev)
+   - ECS descarga nueva imagen
+   - Reemplaza contenedor antiguo
+   - Endpoint actualizado (sin downtime)
+   ↓
+7. Usuario hace request a /predict
+   ↓
+8. API procesa y devuelve predicción
+   ↓
+9. Predicción se guarda en S3 (predicciones_dev.txt)
+```
+
+### Promoción a producción
 
 1. **Desarrollo**: Hacer cambios en rama `dev`
 2. **Push**: `git push origin dev`
-3. **CI/CD automático**:
-   - Tests se ejecutan
-   - Si pasan, imagen Docker se construye
-   - Imagen se sube a ECR
-   - Servicio `api-dev` se actualiza
+3. **CI/CD automático**: Tests + Build + Deploy a dev
 4. **Validación**: Probar endpoint dev
 5. **Promoción a prod**: Merge `dev` → `prod`
 6. **Deploy prod**: Pipeline actualiza `api-prod`
