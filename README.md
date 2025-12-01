@@ -4,7 +4,7 @@ Sistema completo de CI/CD para despliegue automático de modelos de Machine Lear
 
 ## 🎯 Propósito del Proyecto
 
-Este repositorio implementa un **sistema de despliegue automático (MLOps)** que permite actualizar modelos de Machine Learning en producción de forma segura, rápida y sin intervención manual.
+Este repositorio implementa un **sistema de despliegue automático (MLOps)** que permite actualizar modelos de Machine Learning en producción de forma segura, rápida y sin intervención manual..
 
 ### Problema que resuelve
 
